@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
@@ -50,7 +49,7 @@ class ResourceControllerTest {
     void getAccessCode_withAuthenticatedUser_succeeds() {
         addSampleResourceNamedHello();
 
-        with().get("/hello")
+        with().get("/resource/hello")
                 .then()
                 .status(HttpStatus.OK)
                 .body("currentCode", equalTo(accessService.getAccessCodes("hello").getCurrentCode().toString()))
@@ -60,22 +59,20 @@ class ResourceControllerTest {
 
     @Test
     @DirtiesContext
-    @WithAnonymousUser
     void getAccessCode_withUnauthenticatedUser_fails() {
         addSampleResourceNamedHello();
-        with().get("/hello")
+        with().get("/resource/hello")
                 .then()
                 .status(HttpStatus.UNAUTHORIZED);
     }
 
     @Test
     @DirtiesContext
-    @WithMockUser
     void getResource_withCorrectCode() {
         addSampleResourceNamedHello();
         UUID currentCode = accessService.getAccessCodes("hello").getCurrentCode();
 
-        byte[] response = with().get("/hello/{accessCode}", currentCode.toString())
+        byte[] response = with().get("/resource/hello/{accessCode}", currentCode.toString())
                 .then()
                 .status(HttpStatus.OK)
                 .extract().asByteArray();
@@ -85,7 +82,6 @@ class ResourceControllerTest {
 
     @Test
     @DirtiesContext
-    @WithMockUser
     void getResource_withIncorrectCode() {
         addSampleResourceNamedHello();
         UUID currentCode = accessService.getAccessCodes("hello").getCurrentCode();
@@ -95,7 +91,7 @@ class ResourceControllerTest {
             wrongCode = UUID.randomUUID();
         }
 
-        with().get("/hello/{accessCode}", wrongCode.toString())
+        with().get("/resource/hello/{accessCode}", wrongCode.toString())
                 .then()
                 .status(HttpStatus.FORBIDDEN)
                 .body("detail", equalTo("Wrong access code " + wrongCode
@@ -104,23 +100,21 @@ class ResourceControllerTest {
 
     @Test
     @DirtiesContext
-    @WithMockUser
     void getResource_withCorrectCode_fileNotPresent() {
         UUID currentCode =
                 accessService.registerNewResource("hello", Path.of(UUID.randomUUID().toString()))
                         .getCurrentCode();
 
-        with().get("/hello/{accessCode}", currentCode.toString())
+        with().get("/resource/hello/{accessCode}", currentCode.toString())
                 .then()
                 .status(HttpStatus.NOT_FOUND)
                 .body("detail", equalTo("Resource file not found on server for: hello"));
     }
 
     @Test
-    @WithMockUser
     void getResource_nonExistingResource() {
 
-        with().get("/hello/{accessCode}", UUID.randomUUID().toString())
+        with().get("/resource/hello/{accessCode}", UUID.randomUUID().toString())
                 .then()
                 .status(HttpStatus.BAD_REQUEST)
                 .body("detail", equalTo("No resource with identifier: hello"));

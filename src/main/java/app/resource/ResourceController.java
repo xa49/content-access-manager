@@ -12,7 +12,7 @@ import java.net.URI;
 import java.util.UUID;
 
 @RestController
-@RequestMapping
+@RequestMapping("${endpoints.resource}")
 @AllArgsConstructor
 public class ResourceController {
 
