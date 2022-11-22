@@ -1,11 +1,13 @@
 package app.resource;
 
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.Path;
 import java.util.UUID;
 
 @ToString
+@Slf4j
 public class ProtectedResource {
 
     private final String identifier;
@@ -31,6 +33,7 @@ public class ProtectedResource {
 
     public void refreshCodes() {
         accessCodes.refreshCodes();
+        log.debug("New access code for {}: {}", identifier, accessCodes.getCurrentCode());
     }
 
     public boolean checkAccess(UUID accessCode) {
