@@ -1,11 +1,13 @@
 package app.resource;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import java.util.Objects;
 import java.util.UUID;
 
 @Getter
+@EqualsAndHashCode
 public class AccessCodes {
     private UUID currentCode;
     private UUID nextCode;

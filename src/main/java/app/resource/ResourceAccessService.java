@@ -31,15 +31,24 @@ public class ResourceAccessService {
     }
 
     public byte[] getResource(String identifier, UUID accessCode) {
-        if (!accessDetails.containsKey(identifier)) {
-            throw new IllegalArgumentException("No resource with identifier: " + identifier);
-        }
+        verifyResourceExists(identifier);
 
         ProtectedResource details = accessDetails.get(identifier);
         if (details.checkAccess(accessCode)) {
             return getFileBytes(details, accessCode);
         } else {
             throw new IllegalArgumentException("Wrong access code " + accessCode + " for resource: " + identifier);
+        }
+    }
+
+    public AccessCodesDto getAccessCodes(String identifier) {
+        verifyResourceExists(identifier);
+        return mapper.toDto(accessDetails.get(identifier).getAccessCodes());
+    }
+
+    private void verifyResourceExists(String identifier) {
+        if (!accessDetails.containsKey(identifier)) {
+            throw new IllegalArgumentException("No resource with identifier: " + identifier);
         }
     }
 

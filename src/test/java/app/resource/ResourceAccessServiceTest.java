@@ -92,4 +92,18 @@ class ResourceAccessServiceTest {
         assertEquals("Resource file not found on server for: resource", ex.getMessage());
     }
 
+    @Test
+    void getAccessCodes_forExistingResource() {
+        AccessCodesDto code = service.registerNewResource("hello", Path.of("."));
+
+        assertEquals(code, service.getAccessCodes("hello"));
+    }
+
+    @Test
+    void getAccessCodes_forMissingResource() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> service.getAccessCodes("hello"));
+        assertEquals("No resource with identifier: hello", ex.getMessage());
+    }
+
 }
