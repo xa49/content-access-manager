@@ -1,5 +1,6 @@
 package app.security;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -17,6 +18,9 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
+    @Value("${endpoints.useradmin}")
+    private String userAdminEndpoint;
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -26,11 +30,13 @@ public class SecurityConfig {
                 .httpBasic()
                 .and()
                 .authorizeRequests()
-                .mvcMatchers(HttpMethod.POST, "/admin/user").hasAuthority("ADD_USER")
+                .mvcMatchers(HttpMethod.POST, userAdminEndpoint).hasAuthority("ADD_USER")
+                .mvcMatchers(HttpMethod.DELETE, userAdminEndpoint + "/**").hasAuthority("ADD_USER")
                 .mvcMatchers(HttpMethod.GET, "/resource").hasAuthority("GET_CODES")
                 .mvcMatchers(HttpMethod.GET, "/resource/**").permitAll()
                 .anyRequest().denyAll()
-                .and().build();
+                .and().csrf().disable() // !!!
+                .build();
     }
 
     @Bean
@@ -39,7 +45,12 @@ public class SecurityConfig {
                 User.withUsername("alice")
                         .password(passwordEncoder().encode("alice"))
                         .authorities("GET_CODES")
-                        .build());
+                        .build(),
+                User.withUsername("admin")
+                        .password(passwordEncoder().encode("admin"))
+                        .authorities("ADD_USER")
+                        .build()
+        );
     }
 
     @Bean
