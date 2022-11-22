@@ -19,7 +19,7 @@ import java.util.UUID;
 @Slf4j
 public class ResourceAccessService {
 
-    private static final int REFRESH_TIMES_PER_MINUTE = 3;
+    private static final int REFRESH_TIMES_PER_MINUTE = 2;
 
     private final Map<String, ProtectedResource> accessDetails = new HashMap<>();
 
