@@ -40,7 +40,7 @@ class ResourceAccessServiceTest {
     void addingResourceWithExistingIdentifier_throwsException() {
         service.registerNewResource("file", Path.of("."));
 
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+        UserErrorException ex = assertThrows(UserErrorException.class,
                 () -> service.registerNewResource("file", Path.of("/hello")));
         assertEquals("Duplicate identifier: file", ex.getMessage());
     }
@@ -59,7 +59,7 @@ class ResourceAccessServiceTest {
 
     @Test
     void exceptionOnInvalidIdentifier() {
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+        UserErrorException ex = assertThrows(UserErrorException.class,
                 () -> service.getResource("non-existing", UUID.randomUUID()));
         assertEquals("No resource with identifier: non-existing", ex.getMessage());
     }
@@ -77,7 +77,7 @@ class ResourceAccessServiceTest {
         }
 
         UUID finalWrongCode = wrongCode;
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+        IllegalResourceAccessException ex = assertThrows(IllegalResourceAccessException.class,
                 () -> service.getResource("resource", finalWrongCode));
         assertEquals("Wrong access code " + wrongCode  + " for resource: resource", ex.getMessage());
     }
@@ -87,7 +87,7 @@ class ResourceAccessServiceTest {
         File file = new File(tempDir, "validfile.txt");
 
         AccessCodesDto codes = service.registerNewResource("resource", file.toPath());
-        IllegalStateException ex = assertThrows(IllegalStateException.class,
+        MissingResourceException ex = assertThrows(MissingResourceException.class,
                 () -> service.getResource("resource", codes.getCurrentCode()));
         assertEquals("Resource file not found on server for: resource", ex.getMessage());
     }
@@ -101,7 +101,7 @@ class ResourceAccessServiceTest {
 
     @Test
     void getAccessCodes_forMissingResource() {
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+        UserErrorException ex = assertThrows(UserErrorException.class,
                 () -> service.getAccessCodes("hello"));
         assertEquals("No resource with identifier: hello", ex.getMessage());
     }

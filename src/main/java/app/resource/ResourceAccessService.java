@@ -22,7 +22,7 @@ public class ResourceAccessService {
 
     public AccessCodesDto registerNewResource(String identifier, Path path) {
         if (accessDetails.containsKey(identifier)) {
-            throw new IllegalArgumentException("Duplicate identifier: " + identifier);
+            throw new UserErrorException("Duplicate identifier: " + identifier);
         }
         ProtectedResource addition = ProtectedResource.of(identifier, path);
         addition.refreshCodes();
@@ -37,7 +37,7 @@ public class ResourceAccessService {
         if (details.checkAccess(accessCode)) {
             return getFileBytes(details, accessCode);
         } else {
-            throw new IllegalArgumentException("Wrong access code " + accessCode + " for resource: " + identifier);
+            throw new IllegalResourceAccessException("Wrong access code " + accessCode + " for resource: " + identifier);
         }
     }
 
@@ -48,7 +48,7 @@ public class ResourceAccessService {
 
     private void verifyResourceExists(String identifier) {
         if (!accessDetails.containsKey(identifier)) {
-            throw new IllegalArgumentException("No resource with identifier: " + identifier);
+            throw new UserErrorException("No resource with identifier: " + identifier);
         }
     }
 
@@ -58,7 +58,7 @@ public class ResourceAccessService {
         try (InputStream in = Files.newInputStream(path)) {
             return in.readAllBytes();
         } catch (NoSuchFileException e) {
-throw new IllegalStateException("Resource file not found on server for: " + details.getIdentifier());
+            throw new MissingResourceException("Resource file not found on server for: " + details.getIdentifier());
         } catch (IOException e) {
             throw new IllegalStateException("Unexpected IOException during getting resource file bytes", e);
         }
