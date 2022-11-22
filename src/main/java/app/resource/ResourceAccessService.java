@@ -1,6 +1,8 @@
 package app.resource;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -14,7 +16,10 @@ import java.util.UUID;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class ResourceAccessService {
+
+    private static final int REFRESH_TIMES_PER_MINUTE = 3;
 
     private final Map<String, ProtectedResource> accessDetails = new HashMap<>();
 
@@ -35,7 +40,9 @@ public class ResourceAccessService {
 
         ProtectedResource details = accessDetails.get(identifier);
         if (details.checkAccess(accessCode)) {
-            return getFileBytes(details, accessCode);
+            byte[] contents = getFileBytes(details, accessCode);
+            details.refreshCodes();
+            return contents;
         } else {
             throw new IllegalResourceAccessException("Wrong access code " + accessCode + " for resource: " + identifier);
         }
@@ -44,6 +51,11 @@ public class ResourceAccessService {
     public AccessCodesDto getAccessCodes(String identifier) {
         verifyResourceExists(identifier);
         return mapper.toDto(accessDetails.get(identifier).getAccessCodes());
+    }
+
+    @Scheduled(cron = "*/" + (60 / REFRESH_TIMES_PER_MINUTE) +" * * * * *")
+    private void refreshCodes() {
+        accessDetails.values().forEach(ProtectedResource::refreshCodes);
     }
 
     private void verifyResourceExists(String identifier) {
